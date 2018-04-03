@@ -1,4 +1,4 @@
-# es6-readline - read a file line by line in es6 async iterator
+# es6-readline
 
 es6-readline package will return a line by line [async iteractor](https://github.com/tc39/proposal-async-iteration) of the given file path
 
