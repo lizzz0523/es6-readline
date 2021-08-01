@@ -32,3 +32,13 @@ for (const count of [MAX_LINE_NUM, MAX_LINE_NUM-1, MAX_LINE_NUM+1, MAX_LINE_NUM*
 test(`reads a file with CRLF line endings`, async t => {
     await verifyReadsStream(t, 10, readline(stream(10, '\r\n')))
 })
+
+test(`reads a file after pausing`, async t => {
+	const rl = readline(stream(10))
+	// Pause briefly after constructing, to give timeouts a chance to fire
+	// This catches the case where we forget to handle reading the buffer immediately after constructing,
+	// by giving the readline a chance to drain its events into the void if we don't run `.on('line')`
+	await new Promise(resolve => setTimeout(resolve, 1))
+	// Make sure that everything is still there
+	await verifyReadsStream(t, 10, rl)
+})
