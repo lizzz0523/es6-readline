@@ -56,17 +56,16 @@ class ReadLine {
         return new Promise<Line>((resolve, reject) => {
             this.readline_.resume()
             this.readline_.once('readed', () => {
-                resolve(this.read_())
+                resolve()
             })
         })
     }
 
-    readline(): Promise<Line> {
+    async readline(): Promise<Line> {
         if (this.isEmpty_()) {
-            return this.more_()
-        } else {
-            return this.next_()
+            await this.more_()
         }
+        return this.next_()
     }
 
     async *[Symbol.asyncIterator]() {
