@@ -82,6 +82,8 @@ class ReadLine {
     }
 }
 
+export const MAX_LINE_NUM = ReadLine.MAX_LINE_NUM
+
 export default function createReadLine(stream: NodeJS.ReadableStream): ReadLine
 export default function createReadLine(path: string, encoding: string): ReadLine
 export default function createReadLine(input: string|NodeJS.ReadableStream, encoding: string = 'utf-8') {
