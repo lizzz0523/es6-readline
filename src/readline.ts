@@ -7,13 +7,14 @@ if (Symbol['asyncIterator'] === void 0) {
 
 type Line = string | null
 
-class ReadLine {
+class ReadLine implements AsyncIterator<string> {
     static readonly MAX_LINE_NUM = 1000
 
     private buffer_: Line[]
     private readIndex_: number
     private writeIndex_: number
     private readline_: readline.ReadLine
+    private iterator_: AsyncIterator<string>
 
     constructor(input: NodeJS.ReadableStream) {
         this.buffer_ = []
@@ -35,6 +36,8 @@ class ReadLine {
             this.buffer_[this.writeIndex_++] = null
             this.readline_.emit('readed')
         })
+        
+        this.iterator_ = this.getIterator_()
     }
 
     isEmpty_(): boolean {
@@ -68,7 +71,7 @@ class ReadLine {
         return this.next_()
     }
 
-    async *[Symbol.asyncIterator]() {
+    async *getIterator_() {
         while (true) {
             const line = await this.readline()
 
@@ -78,6 +81,14 @@ class ReadLine {
 
             yield line
         }
+    }
+    
+    [Symbol.asyncIterator]() {
+        return this
+    }
+    
+    next(): Promise<IteratorResult<string>> {
+        return this.iterator_.next()
     }
 }
 
