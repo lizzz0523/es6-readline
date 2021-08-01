@@ -65,15 +65,17 @@ class ReadLine implements AsyncIterator<string> {
     }
 
     async readline(): Promise<Line> {
-        if (this.isEmpty_()) {
-            await this.more_()
-        }
-        return this.next_()
+        const {value, done} = await this.next()
+        return done ? null : value
     }
 
     async *getIterator_() {
         while (true) {
-            const line = await this.readline()
+            if (this.isEmpty_()) {
+                await this.more_()
+            }
+
+            const line = await this.next_()
 
             if (line === null) {
                 break
