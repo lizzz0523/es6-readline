@@ -55,7 +55,7 @@ class ReadLine {
 
         return new Promise<Line>((resolve, reject) => {
             this.readline_.resume()
-            this.readline_.on('readed', () => {
+            this.readline_.once('readed', () => {
                 resolve(this.read_())
             })
         })
