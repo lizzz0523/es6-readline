@@ -12,9 +12,17 @@ npm i es6-readline
 const readline = require('es6-readline')
 
 (async () => {
-    const lines = readline('path/to/file')
+    // Read a file
+    const file_lines = readline('path/to/file')
 
-    for await (const line of lines) {
+    for await (const line of file_lines) {
+        console.log(line)
+    }
+    
+    // Read a stream
+    const stream_lines = readline(process.stdin)
+
+    for await (const line of stream_lines) {
         console.log(line)
     }
 })()

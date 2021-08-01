@@ -7,22 +7,21 @@ if (Symbol['asyncIterator'] === void 0) {
 
 type Line = string | null
 
-class ReadLine {
+class ReadLine implements AsyncIterator<string> {
     static readonly MAX_LINE_NUM = 1000
 
     private buffer_: Line[]
     private readIndex_: number
     private writeIndex_: number
     private readline_: readline.ReadLine
+    private iterator_: AsyncIterator<string>
 
-    constructor(path: string, encoding: string = 'utf-8') {
+    constructor(input: NodeJS.ReadableStream) {
         this.buffer_ = []
         this.readIndex_ = 0
         this.writeIndex_ = 0
 
-        this.readline_ = readline.createInterface({
-            input: fs.createReadStream(path, { encoding })
-        })
+        this.readline_ = readline.createInterface({input})
 
         this.readline_.on('line', line => {
             this.buffer_[this.writeIndex_++] = line
@@ -37,6 +36,8 @@ class ReadLine {
             this.buffer_[this.writeIndex_++] = null
             this.readline_.emit('readed')
         })
+        
+        this.iterator_ = this.getIterator_()
     }
 
     isEmpty_(): boolean {
@@ -47,33 +48,30 @@ class ReadLine {
         return this.buffer_[this.readIndex_++]
     }
 
-    next_(): Promise<Line> {
-        return Promise.resolve(this.read_())
-    }
-
     more_(): Promise<Line> {
         this.readIndex_ = 0
         this.writeIndex_ = 0
 
         return new Promise<Line>((resolve, reject) => {
             this.readline_.resume()
-            this.readline_.on('readed', () => {
-                resolve(this.read_())
+            this.readline_.once('readed', () => {
+                resolve()
             })
         })
     }
 
-    readline(): Promise<Line> {
-        if (this.isEmpty_()) {
-            return this.more_()
-        } else {
-            return this.next_()
-        }
+    async readline(): Promise<Line> {
+        const {value, done} = await this.next()
+        return done ? null : value
     }
 
-    async *[Symbol.asyncIterator]() {
+    async *getIterator_() {
         while (true) {
-            const line = await this.readline()
+            if (this.isEmpty_()) {
+                await this.more_()
+            }
+
+            const line = this.read_()
 
             if (line === null) {
                 break
@@ -82,8 +80,24 @@ class ReadLine {
             yield line
         }
     }
+    
+    [Symbol.asyncIterator]() {
+        return this
+    }
+    
+    next(): Promise<IteratorResult<string>> {
+        return this.iterator_.next()
+    }
 }
 
-export default (path: string, encoding: string) => {
-    return new ReadLine(path, encoding)
+export const MAX_LINE_NUM = ReadLine.MAX_LINE_NUM
+
+export default function createReadLine(stream: NodeJS.ReadableStream): ReadLine
+export default function createReadLine(path: string, encoding: string): ReadLine
+export default function createReadLine(input: string|NodeJS.ReadableStream, encoding: string = 'utf-8') {
+    if (typeof input === 'string') {
+        return new ReadLine(fs.createReadStream(input, { encoding }))
+    } else {
+        return new ReadLine(input)
+    }
 }
