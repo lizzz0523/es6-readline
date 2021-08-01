@@ -15,14 +15,12 @@ class ReadLine {
     private writeIndex_: number
     private readline_: readline.ReadLine
 
-    constructor(path: string, encoding: string = 'utf-8') {
+    constructor(input: NodeJS.ReadableStream) {
         this.buffer_ = []
         this.readIndex_ = 0
         this.writeIndex_ = 0
 
-        this.readline_ = readline.createInterface({
-            input: fs.createReadStream(path, { encoding })
-        })
+        this.readline_ = readline.createInterface({input})
 
         this.readline_.on('line', line => {
             this.buffer_[this.writeIndex_++] = line
@@ -84,6 +82,12 @@ class ReadLine {
     }
 }
 
-export default (path: string, encoding: string) => {
-    return new ReadLine(path, encoding)
+export default function createReadLine(stream: NodeJS.ReadableStream): ReadLine
+export default function createReadLine(path: string, encoding: string): ReadLine
+export default function createReadLine(input: string|NodeJS.ReadableStream, encoding: string = 'utf-8') {
+    if (typeof input === 'string') {
+        return new ReadLine(fs.createReadStream(input, { encoding }))
+    } else {
+        return new ReadLine(input)
+    }
 }
