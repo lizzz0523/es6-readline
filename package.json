@@ -1,6 +1,6 @@
 {
   "name": "es6-readline",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "read a file line by line in es6 async iterator",
   "main": "index.js",
   "repository": {
