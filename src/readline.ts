@@ -48,10 +48,6 @@ class ReadLine implements AsyncIterator<string> {
         return this.buffer_[this.readIndex_++]
     }
 
-    next_(): Promise<Line> {
-        return Promise.resolve(this.read_())
-    }
-
     more_(): Promise<Line> {
         this.readIndex_ = 0
         this.writeIndex_ = 0
@@ -75,7 +71,7 @@ class ReadLine implements AsyncIterator<string> {
                 await this.more_()
             }
 
-            const line = await this.next_()
+            const line = this.read_()
 
             if (line === null) {
                 break
